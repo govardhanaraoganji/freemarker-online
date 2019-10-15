@@ -1,0 +1,56 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership. The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+apply plugin: 'idea'
+
+idea {
+    project {
+        jdkName = '1.8'
+    }
+}
+
+idea.project.ipr {
+    withXml { provider ->
+        provider.node.component.find { it.@name == 'VcsDirectoryMappings' }.mapping.@vcs = 'Git'
+    }
+}
+
+idea.workspace.iws.withXml { provider ->
+    def runManager = provider.node.component.find { it.@name == 'RunManager' }
+    runManager.attributes().put('selected', "Application.MyProjectStartup")
+    Node list = runManager.list[0]
+    list.attributes().put('size', '1')
+    list.appendNode('item', [index: '0', class: 'java.lang.String', itemvalue: 'MyProjectStartup'])
+    def Application = runManager.appendNode('configuration', [default: 'false', name: "${projectName}", type: 'Application', factoryName: 'Application'])
+    Application.appendNode('extension', [name: 'coverage', enabled: 'false', merge: 'false', runner: 'idea'])
+    Application.appendNode('option', [name: 'MAIN_CLASS_NAME', value: "org.apache.freemarker.onlinetester.dropwizard.FreeMarkerOnlineTester"])
+    Application.appendNode('option', [name: 'VM_PARAMETERS', value: ""])
+    Application.appendNode('option', [name: 'PROGRAM_PARAMETERS', value: "server  src/main/resources/${projectName}.yml"])
+    Application.appendNode('option', [name: 'WORKING_DIRECTORY', value: "$projectDir"])
+    Application.appendNode('option', [name: 'ALTERNATIVE_JRE_PATH_ENABLED', value: "false"])
+    Application.appendNode('option', [name: 'ALTERNATIVE_JRE_PATH', value: ""])
+    Application.appendNode('option', [name: 'ENABLE_SWING_INSPECTOR', value: "false"])
+    Application.appendNode('option', [name: 'ENV_VARIABLES'])
+    Application.appendNode('option', [name: 'PASS_PARENT_ENVS', value: "true"])
+    Application.appendNode('module', [name: "${projectName}"])
+    Application.appendNode('envs')
+    Application.appendNode('RunnerSettings', [RunnerId: 'Run'])
+    Application.appendNode('ConfigurationWrapper', [RunnerId: 'Run'])
+    Application.appendNode('method')
+}
